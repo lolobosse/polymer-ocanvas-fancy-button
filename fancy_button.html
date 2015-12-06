@@ -2,40 +2,67 @@
       href="bower_components/polymer/polymer.html">
 <script src="bower_components/gsap/src/uncompressed/TweenMax.js"></script>
 <script src="bower_components/gsap/src/uncompressed/plugins/CSSPlugin.js"></script>
-
-<!--<script>-->
-    <!--Polymer({-->
-        <!--is: "my-fancy-button",-->
-        <!--ready: function(){-->
-            <!--this.textContent = "I'm the button!";-->
-<!--//            TweenLite.ticker.addEventListener("hover", function(){-->
-<!--//                console.log(this.$.mfb);-->
-<!--//            })-->
-        <!--}-->
-    <!--})-->
-<!--</script>-->
-
+<script src="libs/ocanvas-2.8.2.min.js"></script>
 
 <dom-module id="my-fancy-button">
 
     <template>
         <p id="paragraph">I'm a DOM element. This is my local DOM!</p>
+        <canvas width="300" height="100" id="canvas"></canvas>
     </template>
 
     <script>
+        var canvas;
+        var rectangle;
+        var text;
+
+        function changeTextColor(text, canvas, isHover) {
+            console.log("change Color");
+            text.fill = isHover ? "#dec275" : "#fff";
+            canvas.redraw();
+        }
+
+        function mouseLeave () {
+            console.log("mouseleave");
+            changeTextColor(text, canvas, false)
+        }
+
+        function mouseEnter () {
+            console.log("mouseenter");
+            changeTextColor(text, canvas, true)
+        }
+
+        function buildCanvas() {
+            canvas = oCanvas.create({canvas: "#canvas", background: "#222"});
+            rectangle = canvas.display.rectangle({
+                x: canvas.width / 2,
+                y: canvas.height / 2,
+                fill: "#333",
+                origin: {x: "center", y: "center"},
+                width: canvas.width / 2,
+                height: canvas.height / 2
+            }).add();
+            text = canvas.display.text({
+                text: "This is a text",
+                fill: "#fff",
+                width: canvas.width / 6,
+                height: canvas.height / 6,
+                origin: {x: "center", y: "center"},
+                x: canvas.width / 2,
+                y: canvas.height / 2
+            }).add();
+            rectangle.bind("click", function () {
+                console.log("click")
+            });
+            rectangle.bind("mouseenter", mouseEnter);
+            rectangle.bind("mouseleave", mouseLeave);
+            text.bind("mouseenter", mouseEnter);
+            text.bind("mouseexit", mouseLeave);
+        }
         Polymer({
             is: "my-fancy-button",
             ready: function(){
-                console.log(this.$.paragraph);
-                (this.$.paragraph).addEventListener("mouseenter", function () {
-                    console.log("enter");
-                });
-                (this.$.paragraph).addEventListener("mouseout", function () {
-                    console.log("exit");
-                });
-                (this.$.paragraph).addEventListener("click", function () {
-                    console.log("click");
-                });
+                buildCanvas();
             }
         });
     </script>
