@@ -1,0 +1,43 @@
+<link rel="import"
+      href="bower_components/polymer/polymer.html">
+<script src="bower_components/gsap/src/uncompressed/TweenMax.js"></script>
+<script src="bower_components/gsap/src/uncompressed/plugins/CSSPlugin.js"></script>
+
+<!--<script>-->
+    <!--Polymer({-->
+        <!--is: "my-fancy-button",-->
+        <!--ready: function(){-->
+            <!--this.textContent = "I'm the button!";-->
+<!--//            TweenLite.ticker.addEventListener("hover", function(){-->
+<!--//                console.log(this.$.mfb);-->
+<!--//            })-->
+        <!--}-->
+    <!--})-->
+<!--</script>-->
+
+
+<dom-module id="my-fancy-button">
+
+    <template>
+        <p id="paragraph">I'm a DOM element. This is my local DOM!</p>
+    </template>
+
+    <script>
+        Polymer({
+            is: "my-fancy-button",
+            ready: function(){
+                console.log(this.$.paragraph);
+                (this.$.paragraph).addEventListener("mouseenter", function () {
+                    console.log("enter");
+                });
+                (this.$.paragraph).addEventListener("mouseout", function () {
+                    console.log("exit");
+                });
+                (this.$.paragraph).addEventListener("click", function () {
+                    console.log("click");
+                });
+            }
+        });
+    </script>
+
+</dom-module>

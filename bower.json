@@ -1,0 +1,23 @@
+{
+  "name": "FancyButton",
+  "authors": [
+    "Laurent Meyer <laurent@moid.de>"
+  ],
+  "description": "",
+  "main": "",
+  "moduleType": [],
+  "license": "MIT",
+  "homepage": "http://www.jobninja.eu",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.2.0",
+    "gsap": "~1.18.0",
+    "jquery": "~2.1.4"
+  }
+}
