@@ -8,32 +8,27 @@
 
     <template>
         <p id="paragraph">I'm a DOM element. This is my local DOM!</p>
-        <canvas width="300" height="100" id="canvas"></canvas>
+        <canvas width="900" height="300" id="canvas"></canvas>
     </template>
+
 
     <script>
         var canvas;
         var rectangle;
         var text;
+        var sideRectangles = [];
+        var gold = "#dec275";
+        var white = "#fff";
+        var lines = [];
 
-        function changeTextColor(text, canvas, isHover) {
-            console.log("change Color");
-            text.fill = isHover ? "#dec275" : "#fff";
-            canvas.redraw();
-        }
+        Polymer({
+            is: "my-fancy-button",
+            ready: function () {
+                buildCanvas();
+            }
+        });
 
-        function mouseLeave () {
-            console.log("mouseleave");
-            changeTextColor(text, canvas, false)
-        }
-
-        function mouseEnter () {
-            console.log("mouseenter");
-            changeTextColor(text, canvas, true)
-        }
-
-        function buildCanvas() {
-            canvas = oCanvas.create({canvas: "#canvas", background: "#222"});
+        function buildContainerRectangle() {
             rectangle = canvas.display.rectangle({
                 x: canvas.width / 2,
                 y: canvas.height / 2,
@@ -42,6 +37,8 @@
                 width: canvas.width / 2,
                 height: canvas.height / 2
             }).add();
+        }
+        function buildText() {
             text = canvas.display.text({
                 text: "This is a text",
                 fill: "#fff",
@@ -51,20 +48,86 @@
                 x: canvas.width / 2,
                 y: canvas.height / 2
             }).add();
-            rectangle.bind("click", function () {
-                console.log("click")
+        }
+
+        function changeTextColor(isHover) {
+            text.fill = isHover ? gold : white;
+            canvas.redraw();
+        }
+
+        function changeSideRectangleColor(isHover) {
+            sideRectangles.map(function (element) {
+                element.fill = isHover ? gold : white;
             });
+            canvas.redraw();
+        }
+        function mouseLeave() {
+            changeTextColor(false);
+            changeSideRectangleColor(false);
+        }
+
+        function mouseEnter() {
+            changeTextColor(true);
+            changeSideRectangleColor(true)
+        }
+        function bindListeners() {
             rectangle.bind("mouseenter", mouseEnter);
             rectangle.bind("mouseleave", mouseLeave);
             text.bind("mouseenter", mouseEnter);
             text.bind("mouseexit", mouseLeave);
+            sideRectangles.map(function (sideRectangle) {
+                sideRectangle.bind("mouseenter", mouseEnter);
+                sideRectangle.bind("mouseleave", mouseLeave);
+            })
         }
-        Polymer({
-            is: "my-fancy-button",
-            ready: function(){
-                buildCanvas();
-            }
-        });
+        function buildSideRectangles() {
+            sideRectangles[0] = canvas.display.rectangle({
+                fill: "#fff",
+                width: canvas.width / 100,
+                height: canvas.height / 5,
+                origin: {x: "center", y: "center"},
+                y: canvas.height / 2,
+                x: rectangle.x - ((0.85) * 0.5 * rectangle.width)
+            }).add();
+            sideRectangles[1] = canvas.display.rectangle({
+                fill: "#fff",
+                width: canvas.width / 100,
+                height: canvas.height / 5,
+                origin: {x: "center", y: "center"},
+                y: canvas.height / 2,
+                x: rectangle.x + ((0.85) * 0.5 * rectangle.width)
+            }).add();
+        }
+        function buildLines() {
+            var percentOfRectangleForMargin = (0.35) * rectangle.y;
+            var offsetToSideRectangle = 0.015;
+            var yOfTopLine = rectangle.y - percentOfRectangleForMargin;
+
+            var tempLine = canvas.display.line({
+                start: {x: rectangle.x, y: yOfTopLine},
+                end: {x: sideRectangles[1].x * (1-offsetToSideRectangle), y: yOfTopLine},
+                stroke: "2px " + white
+            }).add();
+            var tempArc = canvas.display.arc({
+                x: tempLine.end.x -1,
+                y: tempLine.end.y,
+                origin : {x:"center", y: "top"},
+                width: sideRectangles[1].x -tempLine.end.x,
+                start: -90,
+                end: 0,
+                radius: 12,
+                stroke: "2px " + white
+            }).add();
+            lines[0] = {line: tempLine, arc: tempArc};
+        }
+        function buildCanvas() {
+            canvas = oCanvas.create({canvas: "#canvas", background: "#222"});
+            buildContainerRectangle();
+            buildText();
+            buildSideRectangles();
+            buildLines();
+            bindListeners();
+        }
     </script>
 
 </dom-module>
