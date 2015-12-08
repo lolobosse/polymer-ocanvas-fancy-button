@@ -20,6 +20,7 @@
         var gold = "#dec275";
         var white = "#fff";
         var lines = [];
+        var strokeWidth = "3px ";
 
         Polymer({
             is: "my-fancy-button",
@@ -98,27 +99,45 @@
                 x: rectangle.x + ((0.85) * 0.5 * rectangle.width)
             }).add();
         }
+        function createHorizontalLine(percentOfRectangleForMargin, isTop, isRight) {
+            var yOfTopLine = rectangle.y + (isTop?-percentOfRectangleForMargin:+percentOfRectangleForMargin);
+            return canvas.display.line({
+                start: {x: rectangle.x, y: yOfTopLine},
+                end: {x: sideRectangles[isRight?1:0].x, y: yOfTopLine},
+                stroke: strokeWidth + white
+            }).add();
+        }
+        function createVerticalLine(percentOfRectangleForMargin, isTop, isRight) {
+            var yOfTopLine = rectangle.y + (isTop?-percentOfRectangleForMargin:+percentOfRectangleForMargin);
+            var usedSideRectangle = isRight?1:0;
+            var halfOfSideRectangleSide = (1 / 2) * sideRectangles[1].height;
+            var offset = isTop? -halfOfSideRectangleSide : halfOfSideRectangleSide;
+            return canvas.display.line({
+                start: {x: sideRectangles[usedSideRectangle].x, y: sideRectangles[usedSideRectangle].y - offset},
+                end: {x: sideRectangles[usedSideRectangle].x, y: yOfTopLine},
+                stroke: strokeWidth + white
+            }).add();
+        }
         function buildLines() {
             var percentOfRectangleForMargin = (0.35) * rectangle.y;
-            var offsetToSideRectangle = 0.015;
+            var offsetToSideRectangle = 0.00;
             var yOfTopLine = rectangle.y - percentOfRectangleForMargin;
+//            var tempArc = canvas.display.arc({
+//                x: tempLine.end.x -1,
+//                y: tempLine.end.y,
+//                origin : {x:"center", y: "top"},
+//                width: sideRectangles[1].x -tempLine.end.x,
+//                start: -90,
+//                end: 0,
+//                radius: 12,
+//                stroke: "2px " + white
+//            }).add();
+            lines[0] = {line: createHorizontalLine(percentOfRectangleForMargin, true, true), line2: createVerticalLine(percentOfRectangleForMargin, true, true)};
+            lines[1] = {line: createHorizontalLine(percentOfRectangleForMargin, false, true), line2: createVerticalLine(percentOfRectangleForMargin, false, true)};
+            lines[2] = {line: createHorizontalLine(percentOfRectangleForMargin, true, false), line2: createVerticalLine(percentOfRectangleForMargin, true, false)};
+            lines[3] = {line: createHorizontalLine(percentOfRectangleForMargin, false, false), line2: createVerticalLine(percentOfRectangleForMargin, false, false)};
 
-            var tempLine = canvas.display.line({
-                start: {x: rectangle.x, y: yOfTopLine},
-                end: {x: sideRectangles[1].x * (1-offsetToSideRectangle), y: yOfTopLine},
-                stroke: "2px " + white
-            }).add();
-            var tempArc = canvas.display.arc({
-                x: tempLine.end.x -1,
-                y: tempLine.end.y,
-                origin : {x:"center", y: "top"},
-                width: sideRectangles[1].x -tempLine.end.x,
-                start: -90,
-                end: 0,
-                radius: 12,
-                stroke: "2px " + white
-            }).add();
-            lines[0] = {line: tempLine, arc: tempArc};
+
         }
         function buildCanvas() {
             canvas = oCanvas.create({canvas: "#canvas", background: "#222"});
