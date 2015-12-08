@@ -22,6 +22,7 @@
         var lines = [];
         var strokeWidth = "3px ";
         var percentOfRectangleForMargin;
+        var timeOfLastCalled = new Date().getTime();
 
         Polymer({
             is: "my-fancy-button",
@@ -70,45 +71,50 @@
 
         function animateEnter() {
             var baseDuration = 170;
-            var hLineProperties = createHorizontalLineBoundaries(percentOfRectangleForMargin, true, true);
-            var hLine = canvas.display.line({
-                start: {x: hLineProperties.start.x, y: hLineProperties.start.y},
-                end: {x: hLineProperties.start.x + 1, y: hLineProperties.start.y},
-                stroke: strokeWidth + gold
-            }).add();
-            var vLineProperties = createVerticalLineBoundaries(percentOfRectangleForMargin, true, true);
-            var vLine;
-            hLine.animate({
-                        end: {x: hLineProperties.end.x, y: hLineProperties.end.y}
-                    }, {
-                        duration: baseDuration,
-                        easing: "ease-in-out-quart",
-                        callback: function () {
-                            // Start other line animation
-                            vLine = canvas.display.line({
-                                start: {x: vLineProperties.start.x, y: vLineProperties.start.y},
-                                end: {x: vLineProperties.start.x, y: vLineProperties.start.y + 1},
-                                stroke: strokeWidth + gold
-                            }).add();
-                            vLine.animate({end:{x: vLineProperties.end.x, y: vLineProperties.end.y}}, {duration: baseDuration * 2});
-                            // Start to remove the line
-                            hLine.animate({start: {x: hLineProperties.end.x, y: hLineProperties.end.y}}, {
-                                duration: baseDuration * 2,
-                                callback: function () {
-                                    // Remove vertical line
-                                    vLine.animate({start:{x:vLineProperties.end.x, y:vLineProperties.end.y}},{
-                                        duration: baseDuration/1.5
-                                    });
-                                }
-                            })
+            lines.map(function(line){
+                var hLineProperties = line.line1;
+                var vLineProperties = line.line2;
+                var hLine = canvas.display.line({
+                    start: {x: hLineProperties.start.x, y: hLineProperties.start.y},
+                    end: {x: hLineProperties.start.x + 1, y: hLineProperties.start.y},
+                    stroke: strokeWidth + gold
+                }).add();
+                var vLine;
+                hLine.animate({
+                            end: {x: hLineProperties.end.x, y: hLineProperties.end.y}
+                        }, {
+                            duration: baseDuration,
+                            easing: "ease-in-out-quart",
+                            callback: function () {
+                                // Start other line animation
+                                vLine = canvas.display.line({
+                                    start: {x: vLineProperties.start.x, y: vLineProperties.start.y},
+                                    end: {x: vLineProperties.start.x, y: vLineProperties.start.y + 1},
+                                    stroke: strokeWidth + gold
+                                }).add();
+                                vLine.animate({end:{x: vLineProperties.end.x, y: vLineProperties.end.y}}, {duration: baseDuration * 2});
+                                // Start to remove the line
+                                hLine.animate({start: {x: hLineProperties.end.x, y: hLineProperties.end.y}}, {
+                                    duration: baseDuration * 2,
+                                    callback: function () {
+                                        // Remove vertical line
+                                        vLine.animate({start:{x:vLineProperties.end.x, y:vLineProperties.end.y}},{
+                                            duration: baseDuration/1.5
+                                        });
+                                    }
+                                })
+                            }
                         }
-                    }
-            )
+                )
+            });
         }
         function mouseEnter() {
             changeTextColor(true);
             changeSideRectangleColor(true);
-            animateEnter();
+            if (new Date().getTime() - timeOfLastCalled > 500) {
+                animateEnter();
+                timeOfLastCalled = new Date().getMilliseconds();
+            }
         }
         function bindListeners() {
             rectangle.bind("mouseenter", mouseEnter);
@@ -191,10 +197,10 @@
 //                radius: 12,
 //                stroke: "2px " + white
 //            }).add();
-//            lines[0] = {line: createHorizontalLine(percentOfRectangleForMargin, true, true), line2: createVerticalLine(percentOfRectangleForMargin, true, true)};
-//            lines[1] = {line: createHorizontalLine(percentOfRectangleForMargin, false, true), line2: createVerticalLine(percentOfRectangleForMargin, false, true)};
-//            lines[2] = {line: createHorizontalLine(percentOfRectangleForMargin, true, false), line2: createVerticalLine(percentOfRectangleForMargin, true, false)};
-//            lines[3] = {line: createHorizontalLine(percentOfRectangleForMargin, false, false), line2: createVerticalLine(percentOfRectangleForMargin, false, false)};
+            lines[0] = {line1: createHorizontalLineBoundaries(percentOfRectangleForMargin, true, true), line2: createVerticalLineBoundaries(percentOfRectangleForMargin, true, true)};
+            lines[1] = {line1: createHorizontalLineBoundaries(percentOfRectangleForMargin, false, true), line2: createVerticalLineBoundaries(percentOfRectangleForMargin, false, true)};
+            lines[2] = {line1: createHorizontalLineBoundaries(percentOfRectangleForMargin, true, false), line2: createVerticalLineBoundaries(percentOfRectangleForMargin, true, false)};
+            lines[3] = {line1: createHorizontalLineBoundaries(percentOfRectangleForMargin, false, false), line2: createVerticalLineBoundaries(percentOfRectangleForMargin, false, false)};
 
 
         }
