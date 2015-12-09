@@ -64,9 +64,64 @@
             });
             canvas.redraw();
         }
+        function animateExit() {
+            var baseDuration = 170;
+            lines.map(function (line) {
+                var hLineProperties = line.line1;
+                var vLineProperties = line.line2;
+                var isRight = hLineProperties.start.x > hLineProperties.end.x;
+                var isTop = vLineProperties.start.y < vLineProperties.end.y;
+                strokeWidth = sideRectangles[0].width / 1.5 + "px ";
+                // Creates the first of the line
+                var vLine = canvas.display.line({
+                    start: {x: vLineProperties.end.x, y: vLineProperties.end.y},
+                    end: {x: vLineProperties.end.x, y: vLineProperties.end.y + (isTop ? -1 : 1)},
+                    stroke: strokeWidth + white
+                }).add();
+                vLine.animate({
+                    end: {x: vLineProperties.end.x, y: hLineProperties.start.y}
+                }, {
+                    // Reduce the size of vline & create and increase the size of hLine
+                    callback: function () {
+                        vLine.animate({
+                            start: {x: vLineProperties.start.x, y: vLine.end.y}
+                        });
+                        var hLine = canvas.display.line({
+                            start: {x: hLineProperties.end.x, y: hLineProperties.start.y},
+                            end: {x: hLineProperties.end.x + (isRight ? 1 : -1), y: hLineProperties.start.y},
+                            stroke: strokeWidth + white
+                        }).add();
+                        hLineWidth = Math.abs(hLineProperties.start.x - hLineProperties.end.x);
+                        hLine.animate({
+                            end: {
+                                x: hLineProperties.end.x + ((isRight ? hLineWidth : -hLineWidth) * 0.2),
+                                y: hLineProperties.start.y
+                            }
+                        }, {
+                            // Move hLine until the end
+                            callback: function () {
+                                hLine.animate({
+                                    x: hLineProperties.start.x + (isRight ? -hLine.length / 2 : hLine.length / 2)
+                                }, {
+                                    // Reduce size of hLine until the end
+                                    callback: function () {
+                                        hLine.animate({
+                                            start: {x: hLine.end.x, y: hLineProperties.end.y}
+                                        });
+                                    }
+                                })
+                            }
+                        })
+                    }
+                });
+
+                // Make the line bigger until the end of vLine
+            })
+        }
         function mouseLeave() {
             changeTextColor(false);
             changeSideRectangleColor(false);
+            animateExit();
         }
 
         function animateEnter() {
@@ -75,6 +130,7 @@
                 var hLineProperties = line.line1;
                 var vLineProperties = line.line2;
                 var isRight = hLineProperties.start.x > hLineProperties.end.x;
+                strokeWidth = sideRectangles[0].width / 1.5 + "px ";
                 var hLine = canvas.display.line({
                     start: {x: hLineProperties.start.x, y: hLineProperties.start.y},
                     end: {x: hLineProperties.start.x + 1, y: hLineProperties.start.y},
@@ -179,7 +235,10 @@
             var yOfTopLine = rectangle.y + (isTop ? -percentOfRectangleForMargin : +percentOfRectangleForMargin);
             return {
                 start: {x: rectangle.x, y: yOfTopLine},
-                end: {x: sideRectangles[isRight ? 1 : 0].x, y: yOfTopLine},
+                end: {
+                    x: sideRectangles[isRight ? 1 : 0].x + (isRight ? sideRectangles[0].width / 2.5 : -sideRectangles[0].width / 2.5),
+                    y: yOfTopLine
+                },
             }
         }
 
@@ -208,18 +267,6 @@
 
         function buildLines() {
             percentOfRectangleForMargin = (0.35) * rectangle.y;
-            var offsetToSideRectangle = 0.00;
-            var yOfTopLine = rectangle.y - percentOfRectangleForMargin;
-//            var tempArc = canvas.display.arc({
-//                x: tempLine.end.x -1,
-//                y: tempLine.end.y,
-//                origin : {x:"center", y: "top"},
-//                width: sideRectangles[1].x -tempLine.end.x,
-//                start: -90,
-//                end: 0,
-//                radius: 12,
-//                stroke: "2px " + white
-//            }).add();
             lines[0] = {
                 line1: createHorizontalLineBoundaries(percentOfRectangleForMargin, true, true),
                 line2: createVerticalLineBoundaries(percentOfRectangleForMargin, true, true),
