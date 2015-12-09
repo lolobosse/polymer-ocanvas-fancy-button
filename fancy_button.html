@@ -8,7 +8,7 @@
 
     <template>
         <p id="paragraph">I'm a DOM element. This is my local DOM!</p>
-        <canvas width="900" height="300" id="canvas"></canvas>
+        <canvas width="150" height="60" id="canvas"></canvas>
     </template>
 
 
@@ -24,6 +24,8 @@
         var percentOfRectangleForMargin;
         var timeOfLastCalled = new Date().getTime();
 
+        var isAnimationRunning = false;
+
         Polymer({
             is: "my-fancy-button",
             ready: function () {
@@ -37,13 +39,13 @@
                 y: canvas.height / 2,
                 fill: "#333",
                 origin: {x: "center", y: "center"},
-                width: canvas.width / 2,
-                height: canvas.height / 2
+                width: canvas.width,
+                height: canvas.height
             }).add();
         }
         function buildText() {
             text = canvas.display.text({
-                text: "This is a text",
+                text: "REGISTER",
                 fill: "#fff",
                 width: canvas.width / 6,
                 height: canvas.height / 6,
@@ -65,6 +67,10 @@
             canvas.redraw();
         }
         function animateExit() {
+            if (isAnimationRunning){
+                return
+            }
+            isAnimationRunning = true;
             var baseDuration = 170;
             lines.map(function (line) {
                 var hLineProperties = line.line1;
@@ -81,10 +87,15 @@
                 vLine.animate({
                     end: {x: vLineProperties.end.x, y: hLineProperties.start.y}
                 }, {
+                    easing: "linear",
+                    duration: baseDuration/2,
                     // Reduce the size of vline & create and increase the size of hLine
                     callback: function () {
                         vLine.animate({
                             start: {x: vLineProperties.start.x, y: vLine.end.y}
+                        },{
+                            easing: "linear",
+                            duration: baseDuration/2
                         });
                         var hLine = canvas.display.line({
                             start: {x: hLineProperties.end.x, y: hLineProperties.start.y},
@@ -98,33 +109,48 @@
                                 y: hLineProperties.start.y
                             }
                         }, {
+                            easing: "linear",
+                            duration: baseDuration/2,
                             // Move hLine until the end
                             callback: function () {
                                 hLine.animate({
                                     x: hLineProperties.start.x + (isRight ? -hLine.length / 2 : hLine.length / 2)
                                 }, {
+                                    easing: "linear",
+                                    duration: baseDuration,
                                     // Reduce size of hLine until the end
                                     callback: function () {
                                         hLine.animate({
                                             start: {x: hLine.end.x, y: hLineProperties.end.y}
+                                        }, {
+                                            easing: "linear",
+                                            duration: baseDuration/2
                                         });
+                                        isAnimationRunning = false;
                                     }
                                 })
                             }
                         })
                     }
                 });
-
-                // Make the line bigger until the end of vLine
             })
         }
         function mouseLeave() {
             changeTextColor(false);
             changeSideRectangleColor(false);
-            animateExit();
+        }
+
+        function mouseRectangleLeave() {
+            changeTextColor(false);
+            changeSideRectangleColor(false);
+            animateExit()
         }
 
         function animateEnter() {
+            if (isAnimationRunning){
+                return;
+            }
+            isAnimationRunning = true;
             var baseDuration = 170;
             lines.map(function (line) {
                 var hLineProperties = line.line1;
@@ -178,7 +204,10 @@
                                         // Start to remove the line
                                         hLine.animate({start: {x: hLineProperties.end.x, y: hLineProperties.end.y}}, {
                                             duration: baseDuration / 2,
-                                            easing: "linear"
+                                            easing: "linear",
+                                            callback: function () {
+                                                isAnimationRunning = false;
+                                            }
                                         })
                                     }
                                 });
@@ -196,31 +225,31 @@
             }
         }
         function bindListeners() {
-            rectangle.bind("mouseenter", mouseEnter);
-            rectangle.bind("mouseleave", mouseLeave);
-            text.bind("mouseenter", mouseEnter);
-            text.bind("mouseexit", mouseLeave);
-            sideRectangles.map(function (sideRectangle) {
-                sideRectangle.bind("mouseenter", mouseEnter);
-                sideRectangle.bind("mouseleave", mouseLeave);
-            })
+            canvas.bind("mouseenter", mouseEnter);
+            canvas.bind("mouseleave", mouseRectangleLeave);
         }
         function buildSideRectangles() {
+            var width = canvas.width / 70;
+            var height = canvas.height / 2.5;
+            var y = canvas.height / 2;
+            var distanceFromMiddle = 0.4;
+            var x = rectangle.x - (distanceFromMiddle * rectangle.width);
+            var x2 = rectangle.x + (distanceFromMiddle * rectangle.width);
             sideRectangles[0] = canvas.display.rectangle({
                 fill: "#fff",
-                width: canvas.width / 100,
-                height: canvas.height / 5,
+                width: width,
+                height: height,
                 origin: {x: "center", y: "center"},
-                y: canvas.height / 2,
-                x: rectangle.x - ((0.85) * 0.5 * rectangle.width)
+                y: y,
+                x: x
             }).add();
             sideRectangles[1] = canvas.display.rectangle({
                 fill: "#fff",
-                width: canvas.width / 100,
-                height: canvas.height / 5,
+                width: width,
+                height: height,
                 origin: {x: "center", y: "center"},
                 y: canvas.height / 2,
-                x: rectangle.x + ((0.85) * 0.5 * rectangle.width)
+                x: x2
             }).add();
         }
         function createHorizontalLine(percentOfRectangleForMargin, isTop, isRight) {
@@ -238,7 +267,7 @@
                 end: {
                     x: sideRectangles[isRight ? 1 : 0].x + (isRight ? sideRectangles[0].width / 2.5 : -sideRectangles[0].width / 2.5),
                     y: yOfTopLine
-                },
+                }
             }
         }
 
@@ -266,7 +295,7 @@
         }
 
         function buildLines() {
-            percentOfRectangleForMargin = (0.35) * rectangle.y;
+            percentOfRectangleForMargin = (0.65) * rectangle.y;
             lines[0] = {
                 line1: createHorizontalLineBoundaries(percentOfRectangleForMargin, true, true),
                 line2: createVerticalLineBoundaries(percentOfRectangleForMargin, true, true),
