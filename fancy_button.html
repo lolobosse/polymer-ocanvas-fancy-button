@@ -8,17 +8,18 @@
 
     <template>
         <p id="paragraph">I'm a DOM element. This is my local DOM!</p>
-        <canvas width="150" height="60" id="canvas"></canvas>
+        <canvas width={{canvasWidth}} height={{canvasHeight}} id="canvas"></canvas>
     </template>
 
 
     <script>
         var canvas;
         var rectangle;
-        var text;
+        var canvasText = "REGISTER";
         var sideRectangles = [];
-        var gold = "#dec275";
-        var white = "#fff";
+        var activeColor = "#dec275";
+        var inactiveColor = "#fff";
+        var canvasBackgroundColor = "#333";
         var lines = [];
         var strokeWidth = "3px ";
         var percentOfRectangleForMargin;
@@ -27,8 +28,28 @@
         var isAnimationRunning = false;
 
         Polymer({
-            is: "my-fancy-button",
-            ready: function () {
+            is: 'my-fancy-button',
+            properties:{
+                hoverColor: String,
+                normalColor: String,
+                backgroundColor: String,
+                xText: String,
+                canvasWidth: Number,
+                canvasHeight: Number
+            },
+            attached: function(){
+                if (this.hoverColor){
+                    activeColor = this.hoverColor;
+                }
+                if (this.normalColor){
+                    inactiveColor = this.normalColor;
+                }
+                if (this.backgroundColor){
+                    canvasBackgroundColor = this.backgroundColor;
+                }
+                if (this.xText){
+                    canvasText = this.xText;
+                }
                 buildCanvas();
             }
         });
@@ -37,7 +58,7 @@
             rectangle = canvas.display.rectangle({
                 x: canvas.width / 2,
                 y: canvas.height / 2,
-                fill: "#333",
+                fill: canvasBackgroundColor,
                 origin: {x: "center", y: "center"},
                 width: canvas.width,
                 height: canvas.height
@@ -45,8 +66,8 @@
         }
         function buildText() {
             text = canvas.display.text({
-                text: "REGISTER",
-                fill: "#fff",
+                text: canvasText,
+                fill: inactiveColor,
                 width: canvas.width / 6,
                 height: canvas.height / 6,
                 origin: {x: "center", y: "center"},
@@ -56,13 +77,13 @@
         }
 
         function changeTextColor(isHover) {
-            text.fill = isHover ? gold : white;
+            text.fill = isHover ? activeColor : inactiveColor;
             canvas.redraw();
         }
 
         function changeSideRectangleColor(isHover) {
             sideRectangles.map(function (element) {
-                element.fill = isHover ? gold : white;
+                element.fill = isHover ? activeColor : inactiveColor;
             });
             canvas.redraw();
         }
@@ -82,7 +103,7 @@
                 var vLine = canvas.display.line({
                     start: {x: vLineProperties.end.x, y: vLineProperties.end.y},
                     end: {x: vLineProperties.end.x, y: vLineProperties.end.y + (isTop ? -1 : 1)},
-                    stroke: strokeWidth + white
+                    stroke: strokeWidth + inactiveColor
                 }).add();
                 vLine.animate({
                     end: {x: vLineProperties.end.x, y: hLineProperties.start.y}
@@ -100,7 +121,7 @@
                         var hLine = canvas.display.line({
                             start: {x: hLineProperties.end.x, y: hLineProperties.start.y},
                             end: {x: hLineProperties.end.x + (isRight ? 1 : -1), y: hLineProperties.start.y},
-                            stroke: strokeWidth + white
+                            stroke: strokeWidth + inactiveColor
                         }).add();
                         hLineWidth = Math.abs(hLineProperties.start.x - hLineProperties.end.x);
                         hLine.animate({
@@ -160,7 +181,7 @@
                 var hLine = canvas.display.line({
                     start: {x: hLineProperties.start.x, y: hLineProperties.start.y},
                     end: {x: hLineProperties.start.x + 1, y: hLineProperties.start.y},
-                    stroke: strokeWidth + gold
+                    stroke: strokeWidth + activeColor
                 }).add();
                 var vLine;
                 hLine.animate({
@@ -193,7 +214,7 @@
                                         vLine = canvas.display.line({
                                             start: {x: vLineProperties.start.x, y: vLineProperties.start.y},
                                             end: {x: vLineProperties.start.x, y: vLineProperties.start.y + 1},
-                                            stroke: strokeWidth + gold
+                                            stroke: strokeWidth + activeColor
                                         }).add();
                                         vLine.animate({
                                             end: {
@@ -236,7 +257,7 @@
             var x = rectangle.x - (distanceFromMiddle * rectangle.width);
             var x2 = rectangle.x + (distanceFromMiddle * rectangle.width);
             sideRectangles[0] = canvas.display.rectangle({
-                fill: "#fff",
+                fill: inactiveColor,
                 width: width,
                 height: height,
                 origin: {x: "center", y: "center"},
@@ -244,7 +265,7 @@
                 x: x
             }).add();
             sideRectangles[1] = canvas.display.rectangle({
-                fill: "#fff",
+                fill: inactiveColor,
                 width: width,
                 height: height,
                 origin: {x: "center", y: "center"},
@@ -257,7 +278,7 @@
             return canvas.display.line({
                 start: {x: rectangle.x, y: yOfTopLine},
                 end: {x: sideRectangles[isRight ? 1 : 0].x, y: yOfTopLine},
-                stroke: strokeWidth + white
+                stroke: strokeWidth + inactiveColor
             }).add();
         }
         function createHorizontalLineBoundaries(percentOfRectangleForMargin, isTop, isRight) {
@@ -279,7 +300,7 @@
             return canvas.display.line({
                 end: {x: sideRectangles[usedSideRectangle].x, y: sideRectangles[usedSideRectangle].y + offset},
                 start: {x: sideRectangles[usedSideRectangle].x, y: yOfTopLine},
-                stroke: strokeWidth + white
+                stroke: strokeWidth + inactiveColor
             }).add();
         }
 
